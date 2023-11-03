@@ -599,11 +599,6 @@ router isis 4766
    metric 300 level 2
   !
  !
- interface GigabitEthernet0/0/0/4
-  passive
-  address-family ipv4 unicast
-  !
- !
 !
 router ospf 10
  nsr
