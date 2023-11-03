@@ -1,0 +1,152 @@
+config terminal
+
+hostname LAB-MIA02
+interface Loopback0
+ description ## Router-ID ##
+ ipv4 address 211.246.101.229 255.255.255.255
+ ipv6 address 2001:e60:e000:0:211:246:101:229/128
+!
+interface Loopback10
+ description ## Tacs ##
+ ipv4 address 10.9.65.221 255.255.255.255
+!
+interface MgmtEth0/0/CPU0/0
+ shutdown
+!
+interface GigabitEthernet0/0/0/0
+ description ### MIA229(Te0/0/0/3) - MIA228(Te0/0/0/3), Interlink ###
+ ipv4 address 10.59.15.2 255.255.255.252
+ ipv4 unreachables disable
+ ipv6 address 2001:e60:e050:5007:10:59:15:2/126
+ ipv6 unreachables disable
+ load-interval 30
+ no shutdown
+!
+interface GigabitEthernet0/0/0/1
+ shutdown
+!
+interface GigabitEthernet0/0/0/2
+ shutdown
+!
+interface GigabitEthernet0/0/0/3
+ description ### MIA229(Te0/6/1/4) - M.BuSan-GWN128(Te0/1/0/29) Gukan#5-39,40 43919501-0839 ###
+ ipv4 address 10.59.8.17 255.255.255.252
+ ipv4 unreachables disable
+ ipv6 address 2001:e60:e050:5007:10:59:8:11/126
+ ipv6 unreachables disable
+ load-interval 30
+ no shutdown
+!
+route-policy Deny-BGP
+  drop
+end-policy
+!
+route-policy Out-5G-GW
+  if community matches-any (4766:109) then
+    set next-hop self
+  else
+    drop
+  endif
+end-policy
+!
+route-policy Out-5G-GW-IPv6
+  if community matches-any (4766:60109) then
+    set next-hop self
+  else
+    drop
+  endif
+end-policy
+!
+router ospf 10
+ nsr
+ log adjacency changes
+ router-id 211.246.101.229
+ maximum redistributed-prefixes 100
+ timers throttle lsa all 50 100 500
+ timers throttle spf 100 200 5000
+ auto-cost reference-bandwidth 10000
+ redistribute bgp 4766 route-policy Deny-BGP
+ address-family ipv4 unicast
+ area 0.0.0.0
+  interface Loopback0
+   passive enable
+  !
+  interface Loopback10
+   passive enable
+  !
+  interface GigabitEthernet0/0/0/0
+   network point-to-point
+  !
+  interface GigabitEthernet0/0/0/3
+   network point-to-point
+  !
+ !
+!
+router ospfv3 10
+ nsr
+ router-id 211.246.101.229
+ maximum redistributed-prefixes 100
+ timers throttle lsa all 50 100 500
+ timers throttle spf 100 200 5000
+ auto-cost reference-bandwidth 10000
+ redistribute bgp 4766 route-policy Deny-BGP
+ area 0.0.0.0
+  interface Loopback0
+   passive
+  !
+  interface GigabitEthernet0/0/0/0
+   network point-to-point
+  !
+  interface GigabitEthernet0/0/0/3
+   network point-to-point
+  !
+ !
+!
+router bgp 4766
+ nsr
+ bgp router-id 211.246.101.229
+ bgp graceful-restart graceful-reset
+ address-family ipv4 unicast
+  maximum-paths ebgp 16
+  maximum-paths ibgp 16
+ !
+ address-family ipv6 unicast
+  maximum-paths ebgp 16
+  maximum-paths ibgp 16
+ !
+ neighbor-group 5G-GW
+  remote-as 4766
+  password encrypted 1419171C5D56797F65
+  update-source Loopback0
+  address-family ipv4 unicast
+   route-policy Out-5G-GW out
+  !
+ !
+ neighbor-group 5G-GW-IPv6
+  remote-as 4766
+  password encrypted 10400C0E5445415F4D
+  update-source Loopback0
+  address-family ipv6 unicast
+   route-policy Out-5G-GW-IPv6 out
+  !
+ !
+ neighbor 112.174.0.127
+  use neighbor-group 5G-GW
+  description ### M.BuSan-GWN127 ###
+ !
+ neighbor 112.174.0.128
+  use neighbor-group 5G-GW
+  description ### M.BuSan-GWN128 ###
+ !
+ neighbor 2400::112:174:0:127
+  use neighbor-group 5G-GW-IPv6
+  description ### M.BuSan-GWN127 ###
+ !
+ neighbor 2400::112:174:0:128
+  use neighbor-group 5G-GW-IPv6
+  description ### M.BuSan-GWN128 ###
+ !
+!
+commit
+end
+        

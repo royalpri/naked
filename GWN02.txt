@@ -1,0 +1,831 @@
+config terminal
+
+hostname LAB-GWN02
+banner motd x
+==========================================================================
+                              !!!!! WARNING !!!!!                            
+             Only authorized personnel can access this system.
+        The unauthorized access will be subject to a legal penalty.
+                              !!!!! WARNING !!!!!
+==========================================================================
+x
+ipv6 access-list IPv6-UDP80
+ 10 permit udp any any eq 80
+!
+ipv6 access-list IPv6-All-UDP
+ 10 permit udp any any
+!
+ipv6 access-list IPv6-UDP8080
+ 10 permit udp any any eq 8080
+!
+ipv6 access-list IPv6-All-ICMP
+ 10 permit icmpv6 any any
+!
+ipv6 access-list 5G_GW_v6_whitelist
+ 100 permit icmpv6 any any
+ 101 permit icmpv6 any any nd-na
+ 102 permit icmpv6 any any nd-ns
+ 103 permit icmpv6 any any router-advertisement
+ 104 permit icmpv6 any any router-solicitation
+ 105 permit tcp any any eq bgp
+ 106 permit tcp any eq bgp any
+ 107 permit 124 any any
+ 900 deny tcp any any eq 135
+ 901 deny tcp any any eq 445
+ 902 deny tcp any any eq 707
+ 910 deny udp any any eq 135
+ 911 deny udp any any eq netbios-ns
+ 912 deny udp any any eq netbios-dgm
+ 913 deny udp any any eq netbios-ss
+ 914 deny udp any any eq snmp
+ 915 deny udp any any eq snmptrap
+ 916 deny udp any any eq 445
+ 2000 permit ipv6 any 2001:e60:8000::/36
+ 2001 permit ipv6 any 2001:e60:9000::/36
+ 2002 permit ipv6 any 2001:e60:a000::/36
+ 2003 permit ipv6 any 2001:e60:b000::/36
+ 2004 permit ipv6 any 2001:e60:c000::/36
+ 2005 permit ipv6 any 2001:e60:d000::/36
+ 2500 deny ipv6 any host 2001:e60:e990:33:1:111:6:240
+ 2501 deny ipv6 any host 2001:e60:e990:37:1:111:7:240
+ 2600 permit ipv6 any 2001:e60:e990::/48
+ 5000 deny ipv6 any any
+!
+ipv4 access-list vty-acl
+ 10 permit ipv4 172.21.45.0/24 any
+ 20 permit ipv4 172.21.47.0/24 any
+ 30 permit ipv4 172.29.152.0/21 any
+ 40 permit ipv4 172.29.150.0/23 any
+ 50 permit ipv4 172.29.222.0/23 any
+ 60 permit ipv4 172.21.222.0/23 any
+ 70 permit ipv4 172.29.156.0 0.0.0.255 any
+ 80 permit ipv4 172.29.157.0 0.0.0.255 any
+ 90 permit ipv4 any any
+!
+ipv4 access-list snmp-acl
+ 10 permit ipv4 host 172.29.10.51 any
+ 20 permit ipv4 host 172.21.45.200 any
+ 30 permit ipv4 host 172.21.223.170 any
+!
+ipv4 access-list IPv4-UDP80
+ 10 permit udp any any eq 80
+!
+ipv4 access-list IPv4-All-UDP
+ 10 permit udp any any
+!
+ipv4 access-list IPv4-UDP8080
+ 10 permit udp any any eq 8080
+!
+ipv4 access-list IPv4-All-ICMP
+ 10 permit icmp any any
+!
+ipv4 access-list 5G_GW_whitelist
+ 100 permit icmp any any
+ 110 permit tcp any any eq bgp
+ 120 permit tcp any eq bgp any
+ 130 permit 124 any any
+ 900 deny tcp any any eq 135
+ 901 deny tcp any any eq 445
+ 902 deny tcp any any eq 707
+ 910 deny udp any any eq 135
+ 911 deny udp any any eq netbios-ns
+ 912 deny udp any any eq netbios-dgm
+ 913 deny udp any any eq netbios-ss
+ 914 deny udp any any eq snmp
+ 915 deny udp any any eq snmptrap
+ 916 deny udp any any eq 445
+ 2000 permit ipv4 any 118.235.0.0 0.0.7.255
+ 2001 permit ipv4 any 118.235.8.0 0.0.7.255
+ 2002 permit ipv4 any 118.235.16.0 0.0.7.255
+ 2003 permit ipv4 any 118.235.24.0 0.0.7.255
+ 2004 permit ipv4 any 118.235.32.0 0.0.7.255
+ 2005 permit ipv4 any 118.235.40.0 0.0.7.255
+ 2006 permit ipv4 any 118.235.48.0 0.0.3.255
+ 2007 permit ipv4 any 118.235.52.0 0.0.3.255
+ 2008 permit ipv4 any 118.235.64.0 0.0.7.255
+ 2009 permit ipv4 any 118.235.72.0 0.0.7.255
+ 2010 permit ipv4 any 118.235.80.0 0.0.7.255
+ 2200 permit tcp any 110.70.32.0 0.0.7.255 eq domain
+ 2201 permit udp any 110.70.32.0 0.0.7.255 eq domain
+ 2500 deny ipv4 any host 1.111.6.240
+ 2501 deny ipv4 any host 1.111.7.240
+ 2600 permit ipv4 any 1.111.0.0 0.0.255.255
+ 5000 deny ipv4 any any
+!
+class-map match-any IPv4-UDP80
+ match access-group ipv4 IPv4-UDP80 
+ end-class-map
+! 
+class-map match-any IPv6-UDP80
+ match access-group ipv6 IPv6-UDP80 
+ end-class-map
+! 
+class-map match-any IPv4-All-UDP
+ match access-group ipv4 IPv4-All-UDP 
+ end-class-map
+! 
+class-map match-any IPv4-UDP8080
+ match access-group ipv4 IPv4-UDP8080 
+ end-class-map
+! 
+class-map match-any IPv6-All-UDP
+ match access-group ipv6 IPv6-All-UDP 
+ end-class-map
+! 
+class-map match-any IPv6-UDP8080
+ match access-group ipv6 IPv6-UDP8080 
+ end-class-map
+! 
+class-map match-any IPv4-All-ICMP
+ match access-group ipv4 IPv4-All-ICMP 
+ end-class-map
+! 
+class-map match-any IPv6-All-ICMP
+ match access-group ipv6 IPv6-All-ICMP 
+ end-class-map
+! 
+policy-map UDP-ICMP-Limit
+ class IPv4-UDP80
+  police rate 500 mbps 
+   conform-action transmit
+   exceed-action drop
+  ! 
+ ! 
+ class IPv4-UDP8080
+  police rate 500 mbps 
+   conform-action transmit
+   exceed-action drop
+  ! 
+ ! 
+ class IPv4-All-UDP
+  police rate 4 gbps 
+   conform-action transmit
+   exceed-action drop
+  ! 
+ ! 
+ class IPv4-All-ICMP
+  police rate 300 mbps 
+   conform-action transmit
+   exceed-action drop
+  ! 
+ ! 
+ class IPv6-UDP80
+  police rate 500 mbps 
+   conform-action transmit
+   exceed-action drop
+  ! 
+ ! 
+ class IPv6-UDP8080
+  police rate 500 mbps 
+   conform-action transmit
+   exceed-action drop
+  ! 
+ ! 
+ class IPv6-All-UDP
+  police rate 4 gbps 
+   conform-action transmit
+   exceed-action drop
+  ! 
+ ! 
+ class IPv6-All-ICMP
+  police rate 300 mbps 
+   conform-action transmit
+   exceed-action drop
+  ! 
+ ! 
+ class class-default
+ ! 
+ end-policy-map
+! 
+interface Loopback0
+ description ## Router-ID ##
+ ipv4 address 112.174.0.128 255.255.255.255
+ ipv6 address 2400::112:174:0:128/128
+!
+interface Loopback10
+ description ### L10 Load-balancing ###
+ ipv4 address 112.191.128.26 255.255.255.248
+!
+interface MgmtEth0/0/CPU0/0
+ shutdown
+!
+interface GigabitEthernet0/0/0/0
+ description ### M.Busan-GWN128(Te0/1/0/43) - M.Busan-GWN127(Te0/1/0/43) ###
+ mtu 4484
+ ipv4 address 112.174.254.98 255.255.255.252
+ ipv4 unreachables disable
+ ipv6 address 2400::9610:112:174:254:62/126
+ ipv6 unreachables disable
+ load-interval 30
+ no shutdown
+!
+interface GigabitEthernet0/0/0/1
+ description ### M.Busan-GWN128(Te0/1/0/0);Pusan-MNA197D(Te7/2/40);02600009-2692;BSKORNET-FO-0001(139,140) ###
+ mtu 4484
+ ipv4 address 112.190.25.38 255.255.255.252
+ ipv4 unreachables disable
+ ipv6 address 2400::9610:112:190:25:26/126
+ ipv6 unreachables disable
+ load-interval 30
+ ipv4 access-group 5G_GW_whitelist ingress interface-statistics
+ ipv6 access-group 5G_GW_v6_whitelist ingress interface-statistics
+ no shutdown
+!
+interface GigabitEthernet0/0/0/2
+ description ### M.Busan-GWN128(Te0/3/0/0);Pusan-MNA199(Te7/2/40);02600009-5299;BSKORNET-FO-0001(135,136) ###
+ mtu 4484
+ ipv4 address 112.190.27.38 255.255.255.252
+ ipv4 unreachables disable
+ ipv6 address 2400::9610:112:190:27:26/126
+ ipv6 unreachables disable
+ load-interval 30
+ ipv4 access-group 5G_GW_whitelist ingress interface-statistics
+ ipv6 access-group 5G_GW_v6_whitelist ingress interface-statistics
+ no shutdown
+!
+interface GigabitEthernet0/0/0/3
+ description ### M.Busan-GWN128(Te0/1/0/29);HYHW-MIA229(Te0/6/1/4);43919501-0839;BSKORNET-FO-0001(115,116) ###
+ ipv4 address 10.59.8.18 255.255.255.252
+ ipv4 unreachables disable
+ ipv6 address 2001:e60:e050:5007:10:59:8:12/126
+ ipv6 unreachables disable
+ load-interval 30
+ no shutdown
+!
+interface GigabitEthernet0/0/0/4
+ description ### LAB-GWN(Gi0/0/4) - GGC-L3_2(Gi0/0/4) ###
+ ipv4 address 1.111.7.240 255.255.255.254
+ ipv4 unreachables disable
+ ipv6 address 2001:e60:e990:37:1:111:7:240/127
+ ipv6 unreachables disable
+ load-interval 30
+ no shutdown
+!
+interface GigabitEthernet0/0/0/5
+ description ### M.Busan-GWN128 (Te0/1/0/15), 5G_IPS#1-2, W.Busan-NSN175 Eth1/42 ###
+ ipv4 address 10.59.132.1 255.255.255.252
+ ipv4 unreachables disable
+ ipv6 address 2001:e60:e650:5101:10:59:132:1/126
+ ipv6 unreachables disable
+ load-interval 30
+ no shutdown
+!
+interface GigabitEthernet0/0/0/6
+ shutdown
+!
+interface preconfigure MgmtEth0/RP0/CPU0/0
+ shutdown
+!
+
+
+prefix-set GGC-Prefix
+  1.111.7.0/23
+end-set
+!
+prefix-set GGC-TEST-IPv4
+end-set
+!
+prefix-set GGC-TEST-IPv6
+end-set
+!
+prefix-set GGC-Prefix-IPv6
+  2001:e60:e990:34::/64
+end-set
+!
+as-path-set LG-SK
+  ios-regex '.*3786.*|.*9318.*'
+end-set
+!
+route-policy In-MIX
+  if community matches-any (4766:109) then
+    pass
+  else
+    drop
+  endif
+end-policy
+!
+route-policy Out-MIX
+  if community matches-every (4766:555, 4766:9610) then
+    set next-hop self
+  elseif community matches-every (4766:5005, 4766:9610) then
+    set next-hop self
+  else
+    drop
+  endif
+end-policy
+!
+route-policy Deny-BGP
+  drop
+end-policy
+!
+route-policy In-KORNET
+  if as-path in LG-SK then
+    drop
+  elseif community matches-every (4766:5005, 4766:9610) then
+    drop
+  else
+    pass
+  endif
+end-policy
+!
+route-policy Out-5G-GW
+  if community matches-any (4766:5005, 4766:555) then
+    set next-hop self
+  else
+    drop
+  endif
+end-policy
+!
+route-policy Out-KORNET
+  if community matches-every (4766:5005, 4766:9610) then
+    set next-hop 112.191.128.26
+  elseif destination in GGC-Prefix then
+    pass
+  else
+    drop
+  endif
+end-policy
+!
+route-policy Static-BGP
+  if tag eq 555 then
+    set origin igp
+    set community (4766:555, 4766:9610)
+  elseif tag eq 5005 then
+    set origin igp
+    set community (4766:5005, 4766:9610)
+  else
+    drop
+  endif
+end-policy
+!
+route-policy In-MIX-IPv6
+  if community matches-any (4766:60109) then
+    pass
+  else
+    drop
+  endif
+end-policy
+!
+route-policy Out-MIX-IPv6
+  if community matches-every (4766:555, 4766:6610) then
+    set next-hop self
+  elseif community matches-every (4766:5005, 4766:6610) then
+    set next-hop self
+  else
+    drop
+  endif
+end-policy
+!
+route-policy In-KORNET-IPv6
+  if as-path in LG-SK then
+    drop
+  elseif community matches-every (4766:5005, 4766:6610) then
+    drop
+  else
+    pass
+  endif
+end-policy
+!
+route-policy Out-5G-GW-IPv6
+  if community matches-any (4766:5005, 4766:555) then
+    set next-hop self
+  else
+    drop
+  endif
+end-policy
+!
+route-policy Static-BGP-IPv6
+  if tag eq 555 then
+    set origin igp
+    set community (4766:555, 4766:6610)
+  elseif tag eq 5005 then
+    set origin igp
+    set community (4766:5005, 4766:6610)
+  else
+    drop
+  endif
+end-policy
+!
+route-policy In-Global-Platform
+  if destination in GGC-Prefix then
+    set community (4766:555, 4766:9610, no-advertise)
+  else
+    drop
+  endif
+end-policy
+!
+route-policy Out-Global-Platform
+  if community matches-every (4766:5005, 4766:9610) then
+    pass
+  else
+    drop
+  endif
+end-policy
+!
+route-policy In-Global-Platform-IPv6
+  if destination in GGC-Prefix-IPv6 then
+    set community (4766:555, 4766:6610, no-export)
+  else
+    drop
+  endif
+end-policy
+!
+route-policy Out-Global-Platform-IPv6
+  if community matches-every (4766:5005, 4766:6610) then
+    pass
+  else
+    drop
+  endif
+end-policy
+!
+router static
+ address-family ipv4 unicast
+  0.0.0.0/0 61.78.49.241
+  0.0.0.0/0 211.246.101.228 220
+  0.0.0.0/0 211.246.101.229 220
+  1.111.6.0/23 Null0 tag 5005 description GGC_Summary
+  118.235.40.0/21 Null0 tag 5005
+  118.235.40.0/25 GigabitEthernet0/0/0/4 10.59.132.2 tag 555 description 5G_B2B_NAT_POOL
+  118.235.41.0/24 GigabitEthernet0/0/0/4 10.59.132.2 tag 555 description 5G_NAT_1_POOL
+  118.235.42.0/24 GigabitEthernet0/0/0/4 10.59.132.2 tag 555 description 5G_NAT_2_POOL
+  118.235.43.0/24 GigabitEthernet0/0/0/4 10.59.132.2 tag 555 description 5G_NAT_3_POOL
+  118.235.44.0/24 GigabitEthernet0/0/0/4 10.59.132.2 tag 555 description 5G_NAT_4_POOL
+ !
+ address-family ipv6 unicast
+  ::/0 2001:e60:e000:0:211:246:101:228 220
+  ::/0 2001:e60:e000:0:211:246:101:229 220
+  ::/0 GigabitEthernet0/0/0/0 2400::9610:112:174:254:61 100
+  ::/0 GigabitEthernet0/0/0/1 2400::9610:112:190:27:25
+  ::/0 GigabitEthernet0/0/0/2 2400::9610:112:190:25:25
+  2001:e60:c000::/36 Null0 tag 5005
+  2001:e60:c010::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF01_HH_SMF04_IPv6_POOL
+  2001:e60:c030::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF03_HH_SMF04_IPv6_POOL
+  2001:e60:c110::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF01_SJ_SMF03_IPv6_POOL
+  2001:e60:c130::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF03_SJ_SMF03_IPv6_POOL
+  2001:e60:c210::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF01_GR_SMF01_IPv6_POOL
+  2001:e60:c230::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF03_GR_SMF01_IPv6_POOL
+  2001:e60:c310::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF01_DJ_SMF01_IPv6_POOL
+  2001:e60:c330::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF03_DJ_SMF01_IPv6_POOL
+  2001:e60:c3a0::/46 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description 5G_UPF_2_IPv6_POOL
+  2001:e60:c3a4::/47 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description 5G_UPF_2_IPv6_POOL
+  2001:e60:c3a6::/48 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description 5G_UPF_2_IPv6_POOL
+  2001:e60:c3a7::/48 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description 5G_UPF_2_IPv6_POOL
+  2001:e60:c7a0::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF02_DJ_SMF02_IPv6_POOL
+  2001:e60:c8a0::/46 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description 5G_UPF_2_IPv6_POOL
+  2001:e60:c8a4::/47 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description 5G_UPF_2_IPv6_POOL
+  2001:e60:c8a6::/48 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description 5G_UPF_2_IPv6_POOL
+  2001:e60:c8a7::/48 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description 5G_UPF_2_IPv6_POOL
+  2001:e60:ca10::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF01_HH_SMF01_IPv6_POOL
+  2001:e60:ca30::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF03_HH_SMF01_IPv6_POOL
+  2001:e60:cb10::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF01_SJ_SMF02_IPv6_POOL
+  2001:e60:cb30::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF03_SJ_SMF02_IPv6_POOL
+  2001:e60:cc10::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF01_GR_SMF04_IPv6_POOL
+  2001:e60:cc30::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF03_GR_SMF04_IPv6_POOL
+  2001:e60:cd10::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF01_DJ_SMF01_IPv6_POOL
+  2001:e60:cd30::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF03_DJ_SMF01_IPv6_POOL
+  2001:e60:ce10::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF01_DJ_SMF03_IPv6_POOL
+  2001:e60:ce30::/45 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF03_DJ_SMF03_IPv6_POOL
+  2001:e60:cf10::/48 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF01_DJ_SMF03_TEST_POOL
+  2001:e60:cf17::/48 GigabitEthernet0/0/0/4 2001:e60:e650:5101:10:59:132:2 tag 555 description SEBS_UPF01_DJ_SMF03_TEST_POOL
+ !
+!
+router isis 4766
+ is-type level-2-only
+ net 49.9610.1121.7400.0128.00
+ nsf cisco
+ log adjacency changes
+ lsp-gen-interval secondary-wait 100
+ lsp-refresh-interval 2400
+ max-lsp-lifetime 3600
+ address-family ipv4 unicast
+  metric-style wide
+  metric 1000 level 2
+  spf-interval secondary-wait 100
+  maximum-paths 16
+  redistribute bgp 4766 route-policy Deny-BGP
+  maximum-redistributed-prefixes 100
+ !
+ interface Loopback0
+  passive
+  address-family ipv4 unicast
+  !
+ !
+ interface Loopback10
+  passive
+  address-family ipv4 unicast
+  !
+ !
+ interface GigabitEthernet0/0/0/0
+  shutdown
+  circuit-type level-2-only
+  point-to-point
+  hello-padding disable
+  address-family ipv4 unicast
+   fast-reroute per-prefix
+   metric 300 level 2
+  !
+ !
+ interface GigabitEthernet0/0/0/1
+  circuit-type level-2-only
+  point-to-point
+  hello-padding disable
+  address-family ipv4 unicast
+   fast-reroute per-prefix
+   metric 300 level 2
+  !
+ !
+ interface GigabitEthernet0/0/0/2
+  circuit-type level-2-only
+  point-to-point
+  hello-padding disable
+  address-family ipv4 unicast
+   fast-reroute per-prefix
+   metric 300 level 2
+  !
+ !
+ interface GigabitEthernet0/0/0/4
+  passive
+  address-family ipv4 unicast
+  !
+ !
+ interface TenGigE0/1/0/0
+  shutdown
+ !
+ interface TenGigE0/1/0/1
+  shutdown
+ !
+ interface TenGigE0/1/0/2
+  shutdown
+ !
+ interface TenGigE0/1/0/3
+  shutdown
+ !
+ interface TenGigE0/1/0/4
+  shutdown
+ !
+ interface TenGigE0/1/0/5
+  shutdown
+ !
+ interface TenGigE0/1/0/6
+  shutdown
+ !
+ interface TenGigE0/1/0/7
+  shutdown
+ !
+ interface TenGigE0/1/0/8
+  shutdown
+ !
+ interface TenGigE0/1/0/9
+  shutdown
+ !
+ interface TenGigE0/1/0/43
+  shutdown
+ !
+ interface TenGigE0/1/0/44
+  shutdown
+ !
+ interface TenGigE0/1/0/45
+  shutdown
+ !
+ interface TenGigE0/1/0/46
+  shutdown
+ !
+ interface TenGigE0/3/0/0
+  shutdown
+ !
+ interface TenGigE0/3/0/1
+  shutdown
+ !
+ interface TenGigE0/3/0/2
+  shutdown
+ !
+ interface TenGigE0/3/0/3
+  shutdown
+ !
+ interface TenGigE0/3/0/4
+  shutdown
+ !
+ interface TenGigE0/3/0/5
+  shutdown
+ !
+ interface TenGigE0/3/0/6
+  shutdown
+ !
+ interface TenGigE0/3/0/7
+  shutdown
+ !
+ interface TenGigE0/3/0/8
+  shutdown
+ !
+ interface TenGigE0/3/0/9
+  shutdown
+ !
+ interface TenGigE0/3/0/43
+  shutdown
+ !
+ interface TenGigE0/3/0/44
+  shutdown
+ !
+ interface TenGigE0/3/0/45
+  shutdown
+ !
+ interface TenGigE0/3/0/46
+  shutdown
+ !
+!
+router ospf 10
+ nsr
+ log adjacency changes
+ router-id 112.174.0.128
+ maximum redistributed-prefixes 100
+ timers throttle lsa all 50 100 500
+ timers throttle spf 100 200 5000
+ auto-cost reference-bandwidth 10000
+ redistribute bgp 4766 route-policy Deny-BGP
+ area 0.0.0.0
+  interface Loopback0
+   passive enable
+  !
+  interface GigabitEthernet0/0/0/0
+   authentication message-digest
+   message-digest-key 1 md5 encrypted 1419171C5D56797F65
+   network point-to-point
+   passive enable
+  !
+  interface GigabitEthernet0/0/0/3
+   network point-to-point
+  !
+  interface TenGigE0/1/0/29
+   passive enable
+  !
+  interface TenGigE0/1/0/43
+   passive enable
+  !
+  interface TenGigE0/1/0/44
+   passive enable
+  !
+  interface TenGigE0/1/0/45
+   passive enable
+  !
+  interface TenGigE0/1/0/46
+   passive enable
+  !
+  interface TenGigE0/3/0/29
+   passive enable
+  !
+  interface TenGigE0/3/0/43
+   passive enable
+  !
+  interface TenGigE0/3/0/44
+   passive enable
+  !
+  interface TenGigE0/3/0/45
+   passive enable
+  !
+  interface TenGigE0/3/0/46
+   passive enable
+  !
+ !
+!
+router ospfv3 10
+ nsr
+ router-id 112.174.0.128
+ maximum redistributed-prefixes 100
+ timers throttle lsa all 50 100 500
+ timers throttle spf 100 200 5000
+ auto-cost reference-bandwidth 10000
+ redistribute bgp 4766 route-policy Deny-BGP
+ area 0.0.0.0
+  interface Loopback0
+   passive
+  !
+  interface GigabitEthernet0/0/0/0
+   authentication ipsec spi 256 md5 password 055B545C771B1D584B5547425954517E7B767E6665704051415050040908030656
+   network point-to-point
+  !
+  interface GigabitEthernet0/0/0/3
+   network point-to-point
+  !
+ !
+!
+router bgp 4766
+ nsr
+ bgp router-id 112.174.0.128
+ address-family ipv4 unicast
+  maximum-paths ibgp 16
+  redistribute static route-policy Static-BGP
+ !
+ address-family ipv6 unicast
+  maximum-paths ibgp 16
+  redistribute static route-policy Static-BGP-IPv6
+ !
+ neighbor-group MIX
+  remote-as 4766
+  password encrypted 082F4959584B564353
+  update-source Loopback0
+  address-family ipv4 unicast
+   route-policy In-MIX in
+   route-reflector-client
+   route-policy Out-MIX out
+  !
+ !
+ neighbor-group 5G-GW
+  remote-as 4766
+  password encrypted 1217000043595F506B
+  update-source Loopback0
+  address-family ipv4 unicast
+   route-policy Out-5G-GW out
+  !
+ !
+ neighbor-group KORNET
+  remote-as 4766
+  password encrypted 0208014C5A545C750D
+  update-source Loopback0
+  address-family ipv4 unicast
+   route-policy In-KORNET in
+   route-policy Out-KORNET out
+  !
+ !
+ neighbor-group MIX-IPv6
+  remote-as 4766
+  password encrypted 082F4959584B564353
+  update-source Loopback0
+  address-family ipv6 unicast
+   route-policy In-MIX-IPv6 in
+   route-reflector-client
+   route-policy Out-MIX-IPv6 out
+  !
+ !
+ neighbor-group 5G-GW-IPv6
+  remote-as 4766
+  password encrypted 1419171C5D56797F65
+  update-source Loopback0
+  address-family ipv6 unicast
+   route-policy Out-5G-GW-IPv6 out
+  !
+ !
+ neighbor-group Global_Platform
+  remote-as 36040
+  password encrypted 000A16115509585212
+  address-family ipv4 unicast
+   route-policy In-Global-Platform in
+   route-policy Out-Global-Platform out
+  !
+ !
+ neighbor-group Global_Platform_IPv6
+  remote-as 36040
+  password encrypted 05050318701E1D5D58
+  shutdown
+  address-family ipv6 unicast
+   route-policy In-Global-Platform-IPv6 in
+   route-policy Out-Global-Platform-IPv6 out
+  !
+ !
+ neighbor 1.111.7.241
+  use neighbor-group Global_Platform
+  description ### ktmobile-pus2 ###
+ !
+ neighbor 112.174.0.127
+  use neighbor-group 5G-GW
+  description ## GWN127 ##
+ !
+ neighbor 210.183.28.197
+  use neighbor-group KORNET
+  description ## MNA197D ##
+ !
+ neighbor 210.183.28.199
+  use neighbor-group KORNET
+  description ## MNA199 ##
+ !
+ neighbor 211.246.101.228
+  use neighbor-group MIX
+  description ### MIA228 ###
+ !
+ neighbor 211.246.101.229
+  use neighbor-group MIX
+  description ### MIA229 ###
+ !
+ neighbor 2400::112:174:0:127
+  use neighbor-group 5G-GW-IPv6
+  description ## GWN127 ##
+ !
+ neighbor 2001:e60:e990:37:1:111:7:241
+  use neighbor-group Global_Platform_IPv6
+  description ### ktmobile-pus2 ###
+ !
+ neighbor 2001:e60:e000:0:211:246:101:228
+  use neighbor-group MIX-IPv6
+  description ### MIA228 ###
+ !
+ neighbor 2001:e60:e000:0:211:246:101:229
+  use neighbor-group MIX-IPv6
+  description ### MIA229 ###
+ !
+!
+ssh server v2
+ssh server session-limit 10
+
+commit
+end
+
+                                       
