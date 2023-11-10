@@ -1,6 +1,6 @@
 config terminal
 
-hostname LAB_CUSTOMER01
+hostname LAB_CUSTOMER02
 
 interface Ethernet0/0
  no switchport
