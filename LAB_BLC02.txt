@@ -1,0 +1,122 @@
+config terminal
+
+hostname LAB-BLC02
+
+feature ospf
+feature interface-vlan
+feature hsrp
+feature lacp
+
+vlan 1,234,334,434,534,834
+vlan 234
+  name ULSANSINHO_Red_eUPF01_VEDA0
+vlan 334
+  name ULSANSINHO_Red_eUPF01_VEDA1
+vlan 434
+  name ULSANSINHO_Red_eUPF02_VEDA0
+vlan 534
+  name ULSANSINHO_Red_eUPF02_VEDA1
+vlan 834
+  name ULSANSINHO_Red_OSPF
+
+
+
+route-map ULSANSINH1_connect permit 10
+  match interface Ethernet1/1 
+
+vrf context V234_334_434_534_ULSANSINHO_Red
+  ip route 0.0.0.0/0 Vlan234 10.59.141.133 name ULSANSINHO_Default_Backup 100
+  ip route 0.0.0.0/0 Vlan434 10.59.143.133 name ULSANSINHO_Default_Backup 100
+  ip route 0.0.0.0/0 10.200.0.2 name ULSANSINHO_Default
+  ip route 0.0.0.0/0 10.200.1.2 name ULSANSINHO_Default 100
+  ip route 10.190.0.0/20 Vlan234 10.59.141.129 name ULSANSINHO_IP_Pool_eUPF01_V0
+  ip route 10.190.0.0/20 Vlan334 10.59.141.137 name ULSANSINHO_IP_Pool_eUPF01_V1
+  ip route 10.190.0.0/20 Vlan434 10.59.143.129 name ULSANSINHO_IP_Pool_eUPF02_V0_Backup 100
+  ip route 10.190.0.0/20 Vlan534 10.59.143.137 name ULSANSINHO_IP_Pool_eUPF02_V1_Backup 100
+
+
+
+interface Vlan234
+  description ### ULSANSINHO_eUPF#1_VEDA0_VLAN234_02-600009-8772_Eth1/30 ###
+  no shutdown
+  vrf member V234_334_434_534_ULSANSINHO_Red
+  no ip redirects
+  ip address 10.59.141.134/29
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 234 
+    preempt 
+    ip 10.59.141.132
+
+interface Vlan334
+  description ### ULSANSINHO_eUPF#1_VEDA1_VLAN334_02-600009-8772_Eth1/30 ###
+  no shutdown
+  vrf member V234_334_434_534_ULSANSINHO_Red
+  no ip redirects
+  ip address 10.59.141.142/29
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 334 
+    preempt 
+    ip 10.59.141.140
+
+interface Vlan434
+  description ### ULSANSINHO_eUPF#2_VEDA0_VLAN434_02-600009-8772_Eth1/30 ###
+  no shutdown
+  vrf member V234_334_434_534_ULSANSINHO_Red
+  no ip redirects
+  ip address 10.59.143.134/29
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 434 
+    preempt 
+    ip 10.59.143.132
+
+interface Vlan534
+  description ### ULSANSINHO_eUPF#2_VEDA1_VLAN534_02-600009-8772_Eth1/30 ###
+  no shutdown
+  vrf member V234_334_434_534_ULSANSINHO_Red
+  no ip redirects
+  ip address 10.59.143.142/29
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 534 
+    preempt 
+    ip 10.59.143.140
+
+interface Vlan834
+  description ### ULSANSINHO_Redundancy_Inter_Vlan834, vrf_member : V234_334_ULSANSINHO_Red, Inter-Link Po999 ###
+  no shutdown
+  vrf member V234_334_434_534_ULSANSINHO_Red
+  no ip redirects
+  ip address 106.106.0.2/30
+  no ipv6 redirects
+  ip ospf network point-to-point
+  ip router ospf 10 area 0.0.0.0
+
+interface Ethernet1/1
+  description ### ULSANSINHO_intra_02-600009-8772_vrf_member_V234_334_434_534_ULSANSINHO ###
+  no switchport
+  vrf member V234_334_434_534_ULSANSINHO_Red
+  no ip redirects
+  ip address 10.200.1.1/24
+  no shutdown
+
+interface Ethernet1/3
+  description ##### inter-link #####
+  switchport mode trunk
+  switchport trunk allowed vlan 2-4094
+  spanning-tree port type network
+
+boot nxos bootflash:/nxos.7.0.3.I7.10.bin 
+router ospf 10
+  vrf V234_334_434_534_ULSANSINHO_Red
+    router-id 106.106.0.2
+    redistribute direct route-map ULSANSINHO_connect
+
+
+end
+
+copy run star
+
+                
